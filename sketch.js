@@ -1,0 +1,134 @@
+let ground;
+let lander;
+var lander_img;
+var bg_img;
+var thrust;
+var rcs_left;
+var rcs_right;
+let obs,lz
+let lz_img,obs_img
+
+var vx = 0;
+var vy = 0;
+var g = 0.05;
+var fuel = 100;
+
+function preload()
+{
+  lander_img = loadImage("images/normal.png");
+  bg_img = loadImage("images/bg.png");
+  obs_img=loadImage("images/obstacle.png")
+  lz_img=loadImage("images/lz.png")
+  thrust = loadAnimation("images/b_thrust_1.png","images/b_thrust_2.png","images/b_thrust_3.png");
+  crash= loadAnimation("images/crash1.png","images/crash2.png","images/crash3.png");
+  land = loadAnimation("images/landing1.png" ,"images/landing2.png","images/landing_3.png");
+  rcs_left = loadAnimation("images/left_thruster_1.png","images/left_thruster_2.png");
+  normal = loadAnimation("images/normal.png");
+  rcs_right = loadAnimation("images/right_thruster_1.png","images/right_thruster_2.png");
+
+
+  thrust.playing= true;
+  thrust.looping= false;
+  rcs_left.looping = false;
+  rcs_right.looping = false;
+}
+
+function setup() {
+  createCanvas(1000,700);
+  frameRate(80);
+  timer = 1500;
+
+  thrust.frameDelay = 5;
+  rcs_left.frameDelay = 5;
+  rcs_right.frameDelay = 5;
+
+  lander = createSprite(100,50,30,30);
+  lander.addImage(lander_img);
+  lander.scale = 0.1;
+
+  //lander.addAnimation('thrust',"b_thrust_1.png","b_thrust_2.png","b_thrust_3.png" );
+  lander.addAnimation('thrusting',thrust);
+  lander.addAnimation('left',rcs_left);
+  lander.addAnimation('normal',normal);
+  lander.addAnimation('right',rcs_right);
+  lander.addAnimation('crashing',crash)
+  lander.addAnimation('landing',land)
+
+  ground = createSprite(500,690,1000,20);
+  lz=createSprite(880,610,50,30)
+  lz.addImage(lz_img)
+  lz.scale=0.3
+lz.setCollider("rectangle",0,180,400,100)
+lz.debug=true
+
+obs=createSprite(320,530,50,100)
+obs.addImage(obs_img)
+obs.scale=0.5
+obs.setCollider("rectangle",0,100,300,300)
+obs.debug=true
+  rectMode(CENTER);
+  textSize(15);
+}
+
+function draw() 
+{
+  background(51);
+  image(bg_img,0,0);
+  push()
+  fill(255);
+  text("Horizontal Velocity: " +round(vx,2),800,50);
+  text("Fuel: "+fuel,800,25);
+  text("Vertical Velocity: "+round(vy),800,75);
+  pop();
+
+  //fall down
+  vy +=g;
+  lander.position.y+=vy;
+  lander.position.x +=vx;
+  
+  if(lander.collide(obs)==true){
+    lander.changeAnimation('crashing')
+  }
+
+  drawSprites();
+}
+
+function keyPressed()
+{
+  if(keyCode==UP_ARROW && fuel>0)
+  {
+    upward_thrust();
+    lander.changeAnimation('thrusting');
+    thrust.nextFrame();
+    
+  }
+  if(keyCode==RIGHT_ARROW && fuel>0)
+  {
+    lander.changeAnimation('left');
+    right_thrust();
+  }
+
+  if(keyCode==LEFT_ARROW && fuel>0)
+  {
+    lander.changeAnimation('right');
+    left_thrust();
+  }
+}
+
+function upward_thrust()
+{
+  vy = -1;
+  fuel-=1;
+}
+
+function right_thrust()
+{ 
+  vx += 0.2;
+  fuel -=1;
+}
+
+function left_thrust()
+{
+  vx -= 0.2;
+  fuel-=1;
+}
